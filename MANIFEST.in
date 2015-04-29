@@ -1,0 +1,2 @@
+recursive-include import_redirects *
+exclude *.orig *.pyc

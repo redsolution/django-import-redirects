@@ -1,0 +1,17 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n %}
+
+{% block content %}
+	<form action="." method="post" enctype="multipart/form-data" >{% csrf_token %}
+		{{ form.as_p }}
+		<input type="submit" value="{% trans 'Send' %}" {% if disabled %}disabled="disbled"{% endif %} />
+	</form>
+    {% if logs %}
+        <div>
+            <h2>Сообщения:</h2>
+            {% for log in logs %}
+                {{ log }}<br>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

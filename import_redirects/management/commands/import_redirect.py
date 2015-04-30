@@ -62,7 +62,6 @@ class Command(BaseCommand):
                 f.close()
                 raise CommandError(mess)
             with transaction.commit_manually():
-                start_transaction = transaction.savepoint()
                 for i, row in enumerate(data):
                     old_path = row['old_path']
                     new_path = row['new_path']
@@ -72,7 +71,7 @@ class Command(BaseCommand):
                             logger.error(mess)
                         f = open(finish, 'w')
                         f.close()
-                        transaction.savepoint_rollback(start_transaction)
+                        transaction.rollback()
                         raise Exception(mess)
                     if not VALID_URL.match(new_path):
                         mess = 'LINE: %s. Invalid url: %s' %(i+1, new_path)
@@ -80,7 +79,7 @@ class Command(BaseCommand):
                             logger.error(mess)
                         f = open(finish, 'w')
                         f.close()
-                        transaction.savepoint_rollback(start_transaction)
+                        transaction.rollback()
                         raise Exception(mess)
                     try:
                         tmp = transaction.savepoint()

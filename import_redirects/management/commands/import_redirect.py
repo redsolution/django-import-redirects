@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.six.moves import input
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.contrib.redirects.models import Redirect
 from django.conf import settings
 from optparse import make_option
@@ -51,8 +50,19 @@ class Command(BaseCommand):
         if os.path.exists(finish):
             os.remove(finish)
         with open(path_to_file, 'rb') as csvfile:
-            data = csv.DictReader(csvfile, fieldnames=['old_path', 'new_path'], delimiter=';')
-            with transaction.commit_on_success():
+            try:
+                dialect = csv.Sniffer().sniff(csvfile.read(1024), delimiters=';')
+                csvfile.seek(0)
+                data = csv.DictReader(csvfile, fieldnames=['old_path', 'new_path'], dialect=dialect)
+            except csv.Error:
+                mess = 'Incorrect file format'
+                if logfile:
+                    logger.error(mess)
+                f = open(finish, 'w')
+                f.close()
+                raise CommandError(mess)
+            with transaction.commit_manually():
+                start_transaction = transaction.savepoint()
                 for i, row in enumerate(data):
                     old_path = row['old_path']
                     new_path = row['new_path']
@@ -62,6 +72,7 @@ class Command(BaseCommand):
                             logger.error(mess)
                         f = open(finish, 'w')
                         f.close()
+                        transaction.savepoint_rollback(start_transaction)
                         raise Exception(mess)
                     if not VALID_URL.match(new_path):
                         mess = 'LINE: %s. Invalid url: %s' %(i+1, new_path)
@@ -69,8 +80,13 @@ class Command(BaseCommand):
                             logger.error(mess)
                         f = open(finish, 'w')
                         f.close()
+                        transaction.savepoint_rollback(start_transaction)
                         raise Exception(mess)
                     try:
+                        tmp = transaction.savepoint()
+                        Redirect.objects.create(site_id=settings.SITE_ID, old_path=old_path, new_path=new_path)
+                    except IntegrityError:
+                        transaction.savepoint_rollback(tmp)
                         redirect = Redirect.objects.get(site_id=settings.SITE_ID, old_path=old_path)
                         if redirect.new_path != new_path:
                             change = ""
@@ -81,8 +97,7 @@ class Command(BaseCommand):
                             if change == "y" or options.get('change'):
                                 redirect.new_path = new_path
                                 redirect.save()
-                    except ObjectDoesNotExist:
-                        Redirect.objects.create(site_id=settings.SITE_ID, old_path=old_path, new_path=new_path)
+                transaction.commit()
         f = open(finish, 'w')
         f.close()
         if logfile:

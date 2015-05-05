@@ -10,7 +10,6 @@ import csv
 import re
 import logging
 
-VALID_URL = re.compile("^\/$|(?:\/[\w\.,\-\?\+&=#:\]\[!@\$%\^\*\(\)~<>]+)+\/?$")
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s')
@@ -65,7 +64,7 @@ class Command(BaseCommand):
                 for i, row in enumerate(data):
                     old_path = row['old_path']
                     new_path = row['new_path']
-                    if not VALID_URL.match(old_path):
+                    if not old_path.startswith("/"):
                         mess = 'LINE: %s. Invalid url: %s' %(i+1, old_path)
                         if logfile:
                             logger.error(mess)
@@ -73,7 +72,7 @@ class Command(BaseCommand):
                         f.close()
                         transaction.rollback()
                         raise Exception(mess)
-                    if not VALID_URL.match(new_path):
+                    if not new_path.startswith("/"):
                         mess = 'LINE: %s. Invalid url: %s' %(i+1, new_path)
                         if logfile:
                             logger.error(mess)

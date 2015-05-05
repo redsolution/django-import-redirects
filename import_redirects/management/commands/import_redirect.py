@@ -60,42 +60,46 @@ class Command(BaseCommand):
                 f = open(finish, 'w')
                 f.close()
                 raise CommandError(mess)
-            with transaction.commit_manually():
-                for i, row in enumerate(data):
-                    old_path = row['old_path']
-                    new_path = row['new_path']
-                    if not old_path.startswith("/"):
-                        mess = 'LINE: %s. Invalid url: %s' %(i+1, old_path)
-                        if logfile:
-                            logger.error(mess)
-                        f = open(finish, 'w')
-                        f.close()
-                        transaction.rollback()
-                        raise Exception(mess)
-                    if not new_path.startswith("/"):
-                        mess = 'LINE: %s. Invalid url: %s' %(i+1, new_path)
-                        if logfile:
-                            logger.error(mess)
-                        f = open(finish, 'w')
-                        f.close()
-                        transaction.rollback()
-                        raise Exception(mess)
-                    try:
-                        tmp = transaction.savepoint()
-                        Redirect.objects.create(site_id=settings.SITE_ID, old_path=old_path, new_path=new_path)
-                    except IntegrityError:
-                        transaction.savepoint_rollback(tmp)
-                        redirect = Redirect.objects.get(site_id=settings.SITE_ID, old_path=old_path)
-                        if redirect.new_path != new_path:
-                            change = ""
-                            if not options.get('change'):
-                                self.stdout.write('\nRedirect %s exist. Change to %s ---> %s ?:\n'
-                                                  %(redirect.__unicode__(), old_path, new_path))
-                                change = input('"y" for Yes or "n" for No (leave blank for "n"): ')
-                            if change == "y" or options.get('change'):
-                                redirect.new_path = new_path
-                                redirect.save()
-                transaction.commit()
+            try:
+                with transaction.commit_on_success():
+                    for i, row in enumerate(data):
+                        old_path = row['old_path']
+                        new_path = row['new_path']
+                        if not old_path.startswith("/"):
+                            mess = 'LINE: %s. Invalid url: %s' %(i+1, old_path)
+                            if logfile:
+                                logger.error(mess)
+                            f = open(finish, 'w')
+                            f.close()
+                            raise Exception(mess)
+                        if not new_path.startswith("/"):
+                            mess = 'LINE: %s. Invalid url: %s' %(i+1, new_path)
+                            if logfile:
+                                logger.error(mess)
+                            f = open(finish, 'w')
+                            f.close()
+                            raise Exception(mess)
+                        redirect, created = Redirect.objects.get_or_create(site_id=settings.SITE_ID, old_path=old_path)
+                        if created:
+                            redirect.new_path = new_path
+                            redirect.save()
+                        else:
+                            if redirect.new_path != new_path:
+                                change = ""
+                                if not options.get('change'):
+                                    self.stdout.write('\nRedirect %s exist. Change to %s ---> %s ?:\n'
+                                                      %(redirect.__unicode__(), old_path, new_path))
+                                    change = input('"y" for Yes or "n" for No (leave blank for "n"): ')
+                                if change == "y" or options.get('change'):
+                                    redirect.new_path = new_path
+                                    redirect.save()
+            except IntegrityError:
+                mess = 'Error in transaction. Please repeat import'
+                if logfile:
+                    logger.error(mess)
+                f = open(finish, 'w')
+                f.close()
+                raise
         f = open(finish, 'w')
         f.close()
         if logfile:

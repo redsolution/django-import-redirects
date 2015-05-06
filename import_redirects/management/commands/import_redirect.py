@@ -30,9 +30,11 @@ class Command(BaseCommand):
         logfile = options.get('logfile')
         if logfile:
             handler = logging.FileHandler(logfile)
-            handler.setLevel(logging.INFO)
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
+        else:
+            handler = logging.StreamHandler()
+        handler.setLevel(logging.INFO)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
         if not options.get('filename'):
             raise CommandError('You must provide path to csv-file. Use -f option.')
         path_to_file = os.path.normpath(options.get('filename'))
@@ -55,8 +57,7 @@ class Command(BaseCommand):
                 data = csv.DictReader(csvfile, fieldnames=['old_path', 'new_path'], dialect=dialect)
             except csv.Error:
                 mess = 'Incorrect file format'
-                if logfile:
-                    logger.error(mess)
+                logger.error(mess)
                 f = open(finish, 'w')
                 f.close()
                 raise CommandError(mess)
@@ -67,15 +68,13 @@ class Command(BaseCommand):
                         new_path = row['new_path']
                         if not old_path.startswith("/"):
                             mess = 'LINE: %s. Invalid url: %s' %(i+1, old_path)
-                            if logfile:
-                                logger.error(mess)
+                            logger.error(mess)
                             f = open(finish, 'w')
                             f.close()
                             raise Exception(mess)
                         if not new_path.startswith("/"):
                             mess = 'LINE: %s. Invalid url: %s' %(i+1, new_path)
-                            if logfile:
-                                logger.error(mess)
+                            logger.error(mess)
                             f = open(finish, 'w')
                             f.close()
                             raise Exception(mess)
@@ -95,15 +94,11 @@ class Command(BaseCommand):
                                     redirect.save()
             except IntegrityError:
                 mess = 'Error in transaction. Please repeat import'
-                if logfile:
-                    logger.error(mess)
+                logger.error(mess)
                 f = open(finish, 'w')
                 f.close()
                 raise
         f = open(finish, 'w')
         f.close()
-        if logfile:
-            logger.info('Import completed successfully')
-        else:
-            self.stdout.write("Import completed successfully\n")
+        logger.info('Import completed successfully')
 

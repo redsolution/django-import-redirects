@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand, CommandError
 from django.utils.six.moves import input
-from django.db import transaction, IntegrityError
+from django.db import transaction
+from django.db.utils import DatabaseError
 from django.contrib.redirects.models import Redirect
 from django.conf import settings
 from optparse import make_option
@@ -61,8 +62,8 @@ class Command(BaseCommand):
                 f = open(finish, 'w')
                 f.close()
                 raise CommandError(mess)
-            try:
-                with transaction.commit_on_success():
+            with transaction.commit_on_success():
+                try:
                     for i, row in enumerate(data):
                         old_path = row['old_path']
                         new_path = row['new_path']
@@ -92,12 +93,12 @@ class Command(BaseCommand):
                                 if change == "y" or options.get('change'):
                                     redirect.new_path = new_path
                                     redirect.save()
-            except IntegrityError:
-                mess = 'Error in transaction. Please repeat import'
-                logger.error(mess)
-                f = open(finish, 'w')
-                f.close()
-                raise
+                except DatabaseError:
+                    mess = 'Error in transaction. Please repeat import'
+                    logger.error(mess)
+                    f = open(finish, 'w')
+                    f.close()
+                    raise
         f = open(finish, 'w')
         f.close()
         logger.info('Import completed successfully')

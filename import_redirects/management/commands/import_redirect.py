@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s')
-LOCK_EXPIRE = 60 * 5
+LOCK_EXPIRE = 60 * 10
 acquire_lock = lambda: cache.add("import_redirects", 'true', LOCK_EXPIRE)
 release_lock = lambda: cache.delete("import_redirects")
 

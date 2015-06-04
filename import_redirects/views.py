@@ -1,6 +1,9 @@
 # -*- encoding: utf-8 -*-
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
+from django.core.cache import cache
+from django.utils.translation import ugettext_lazy as _
+from django.contrib import messages
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import render_to_response
@@ -56,11 +59,9 @@ def import_redirect(self, request, extra_context=None):
     else:
         form = RedirectImport()
     disabled = False
-    if 'import' in request.session:
-        start = os.path.join(request.session['import'], "import_start")
-        finish = os.path.join(request.session['import'], "import_finish")
-        if os.path.exists(start) and not os.path.exists(finish):
-            disabled = True
+    if cache.get("import_redirects"):
+        messages.warning(request, _('Redirects is already being imported. Please repeat later'))
+        disabled = True
     context = {'form': form, 'logs': logs[:10], 'disabled': disabled}
     return render_to_response(
         'admin/import.html',

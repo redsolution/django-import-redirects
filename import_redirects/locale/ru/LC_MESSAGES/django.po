@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-27 09:09+0500\n"
+"POT-Creation-Date: 2015-05-08 14:02+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,9 +23,13 @@ msgstr ""
 msgid "Csv-file with redirects"
 msgstr "Csv-файл с перенаправлениями"
 
-#: models.py:8 models.py:9
+#: models.py:14 models.py:15
 msgid "Import redirects from csv-file"
 msgstr "Импорт перенаправлений из csv-файла"
+
+#: views.py:68
+msgid "Redirects is already being imported. Please repeat later"
+msgstr "Импорт перенаправлений в данный момент выполняется. Попробуйте позже"
 
 #: templates/admin/import.html:7
 msgid "Send"

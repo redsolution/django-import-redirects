@@ -50,7 +50,7 @@ class Command(BaseCommand):
                     raise CommandError('%s is a directory' %path_to_file)
                 with open(path_to_file, 'rb') as csvfile:
                     try:
-                        dialect = csv.Sniffer().sniff(csvfile.read(1024), delimiters=';')
+                        dialect = csv.Sniffer().sniff(csvfile.read(2048), delimiters=';')
                         csvfile.seek(0)
                         data = csv.DictReader(csvfile, fieldnames=['old_path', 'new_path'], dialect=dialect)
                     except csv.Error:

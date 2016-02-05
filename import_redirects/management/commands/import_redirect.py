@@ -57,7 +57,7 @@ class Command(BaseCommand):
                         mess = 'Incorrect file format'
                         logger.error(mess)
                         raise CommandError(mess)
-                    with transaction.commit_on_success():
+                    with transaction.atomic():
                         try:
                             for i, row in enumerate(data):
                                 old_path = row['old_path']

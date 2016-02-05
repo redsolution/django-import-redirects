@@ -62,7 +62,7 @@ def import_redirect(self, request, extra_context=None):
     if cache.get("import_redirects"):
         messages.warning(request, _('Redirects is already being imported. Please repeat later'))
         disabled = True
-    context = {'form': form, 'logs': logs[:10], 'disabled': disabled}
+    context = {'form': form, 'logs': logs[:10], 'disabled': disabled, 'site_header': self.admin_site.site_header}
     return render_to_response(
         'admin/import.html',
         context,

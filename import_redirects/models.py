@@ -25,6 +25,6 @@ def close_session(sender, **kwargs):
         if not cache.get("import_redirects"):
             try:
                 shutil.rmtree(session_data['import'])
-            except shutil.Error:
+            except (shutil.Error, OSError):
                 pass
 

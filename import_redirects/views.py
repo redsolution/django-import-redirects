@@ -6,11 +6,11 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib import messages
 from django.conf import settings
 from django.http import HttpResponseRedirect
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template.context import RequestContext
 from forms import RedirectImport
 from subprocess import *
-
+from django.urls import reverse
 import os
 import random
 
@@ -23,14 +23,7 @@ def import_redirect(self, request, extra_context=None):
     path_to_logfile = ""
     if 'import' in request.session:
         path_to_logfile = os.path.join(request.session['import'], "info.log")
-    logs = list()
-    try:
-        with open(path_to_logfile, 'r+') as logfile:
-            for log in logfile.readlines():
-                logs.append(log.rstrip())
-    except IOError:
-        pass
-    logs.reverse()
+
     if request.method == 'POST':
         form = RedirectImport(request.POST,  request.FILES)
         if form.is_valid():
@@ -51,23 +44,26 @@ def import_redirect(self, request, extra_context=None):
             if path_to_logfile == "":
                 path_to_logfile = default_storage.save(os.path.join(request.session['import'], "info.log"),
                                                        ContentFile(""))
-            p = Popen(["python", "%s/manage.py" % settings.PROJECT_ROOT, "import_redirect", "-f%s"
+            p = Popen(["python", "%s/manage.py" % settings.BASE_DIR, "import_redirect", "-f%s"
                        %path, "-l%s" %path_to_logfile, "--change"])
-            return HttpResponseRedirect('../')
-        else:
-            pass
     else:
         form = RedirectImport()
     disabled = False
     if cache.get("import_redirects"):
         messages.warning(request, _('Redirects is already being imported. Please repeat later'))
         disabled = True
+
+    logs = list()
+    try:
+        with open(path_to_logfile, 'r+') as logfile:
+            for log in logfile.readlines():
+                logs.append(log.rstrip())
+    except IOError:
+        pass
+    logs.reverse()
+
     context = {'form': form, 'logs': logs[:10], 'disabled': disabled}
-    return render_to_response(
-        'admin/import.html',
-        context,
-        context_instance=RequestContext(request)
-    )
+    return render(request, 'admin/import.html', context)
 
 
 

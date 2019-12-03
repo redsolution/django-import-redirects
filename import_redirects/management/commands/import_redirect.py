@@ -22,12 +22,11 @@ release_lock = lambda: cache.delete("import_redirects")
 class Command(BaseCommand):
     help = 'Import redirects from csv-file'
 
-    option_list = BaseCommand.option_list + (
-        make_option('-f', '--file', action='store', type='string', dest='filename',
-                    help='Path to csv-file. Delimiter: ";"'),
-        make_option('-l', '--log', action='store', type='string', dest='logfile', help='Path to log-file'),
-        make_option('--change', action='store_true', dest='change', help='Change new_path for existing redirects')
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('-f', '--file', action='store', type=str, dest='filename', help='Path to csv-file. Delimiter: ";"'),
+        parser.add_argument('-l', '--log', action='store', type=str, dest='logfile', help='Path to log-file'),
+        parser.add_argument('--change', action='store_true', dest='change', help='Change new_path for existing redirects')
+
     can_import_settings = True
 
     def handle(self, *args, **options):
@@ -57,7 +56,7 @@ class Command(BaseCommand):
                         mess = 'Incorrect file format'
                         logger.error(mess)
                         raise CommandError(mess)
-                    with transaction.commit_on_success():
+                    with transaction.atomic():
                         try:
                             for i, row in enumerate(data):
                                 old_path = row['old_path']

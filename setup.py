@@ -30,6 +30,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Site Management',
     ],
     packages=find_packages(),
+    install_requires=['django==1.11.*'],
     include_package_data=True,
     zip_safe=False,
 )

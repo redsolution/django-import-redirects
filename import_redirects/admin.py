@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
-from models import ImportModel
-from views import import_redirect
+from .models import ImportModel
+from .views import import_redirect
 
 
 class ImportAdmin(admin.ModelAdmin):

@@ -8,7 +8,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.template.context import RequestContext
-from forms import RedirectImport
+from .forms import RedirectImport
 from subprocess import *
 from django.urls import reverse
 import os

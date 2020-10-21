@@ -3,13 +3,13 @@
 Django application for import redirects from csv file
 
 ## Requirements
-- Django 1.11.*
-- Python 2.7
+- Django 2.2.*
+- Python 3.5
 
 ## Installation and basic usage
 1. Install package:
 
-    ``pip install git+git://github.com/oldroute/django-import-redirects``
+    ``pip install git+git://github.com/shoker174/django-import-redirects``
 
 2. Configure your settings file:
 

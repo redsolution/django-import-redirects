@@ -47,7 +47,7 @@ class Command(BaseCommand):
                     raise CommandError('File not found')
                 if os.path.isdir(path_to_file):
                     raise CommandError('%s is a directory' %path_to_file)
-                with open(path_to_file, 'rb') as csvfile:
+                with open(path_to_file, 'r') as csvfile:
                     try:
                         dialect = csv.Sniffer().sniff(csvfile.read(2048), delimiters=';')
                         csvfile.seek(0)

@@ -39,8 +39,8 @@ def import_redirect(self, request, extra_context=None):
                     except OSError:
                         pass
                 request.session['import'] = import_dir
-            path = default_storage.save(os.path.join(request.session['import'], 'redirects.csv'),
-                                        ContentFile(data.read()))
+            path = os.path.join(request.session['import'], 'redirects.csv')
+            default_storage.save(path, ContentFile(data.read()))
             if path_to_logfile == "":
                 path_to_logfile = default_storage.save(os.path.join(request.session['import'], "info.log"),
                                                        ContentFile(""))

@@ -42,8 +42,8 @@ def import_redirect(self, request, extra_context=None):
             path = os.path.join(request.session['import'], 'redirects.csv')
             default_storage.save(path, ContentFile(data.read()))
             if path_to_logfile == "":
-                path_to_logfile = default_storage.save(os.path.join(request.session['import'], "info.log"),
-                                                       ContentFile(""))
+                path_to_logfile = os.path.join(request.session['import'], "info.log")
+                default_storage.save(path_to_logfile, ContentFile(""))
             p = Popen(["python", "%s/manage.py" % settings.BASE_DIR, "import_redirect", "-f%s"
                        %path, "-l%s" %path_to_logfile, "--change"])
     else:

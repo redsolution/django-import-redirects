@@ -54,7 +54,7 @@ def import_csv(file, logfile):
                 raise Exception('%s is a directory' % path_to_file)
             with open(path_to_file, 'r') as csvfile:
                 try:
-                    dialect = csv.Sniffer().sniff(csvfile.readline(), delimiters=';')
+                    dialect = csv.Sniffer().sniff(csvfile.readline(), delimiters=';,')
                     csvfile.seek(0)
                     data = csv.DictReader(csvfile, fieldnames=['old_path', 'new_path'], dialect=dialect)
                 except csv.Error:

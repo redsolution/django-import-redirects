@@ -74,21 +74,13 @@ def import_csv(file, logfile):
                                 mess = 'LINE: %s. Invalid url: %s' % (i + 1, new_path)
                                 logger.error(mess)
                                 raise Exception(mess)
-                            redirect, created = Redirect.objects.get_or_create(site_id=settings.SITE_ID,
-                                                                               old_path=old_path)
-                            if created:
-                                redirect.new_path = new_path
-                                redirect.save()
-                            else:
-                                if redirect.new_path != new_path:
-                                    change = ""
-                                    if not options.get('change'):
-                                        self.stdout.write('\nRedirect %s exist. Change to %s ---> %s ?:\n'
-                                                          % (redirect.__unicode__(), old_path, new_path))
-                                        change = input('"y" for Yes or "n" for No (leave blank for "n"): ')
-                                    if change == "y" or options.get('change'):
-                                        redirect.new_path = new_path
-                                        redirect.save()
+                            redirect, created = Redirect.objects.update_or_create(
+                                site_id=settings.SITE_ID,
+                                old_path=old_path,
+                                defaults={
+                                    'new_path': new_path
+                                }
+                            )
                     except DatabaseError:
                         mess = 'Error in transaction. Please repeat import'
                         logger.error(mess)
